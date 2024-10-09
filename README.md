@@ -19,9 +19,9 @@
 
 ## Table of Contents
 
-- [Installation](#installation)
-- [Usage](#usage)
-- [Contributing](#contributing)
+- [Installation](#Installation)
+- [Usage](#Usage)
+- [Contributing](#Contributing)
 
 ## 📥 Installation
 
