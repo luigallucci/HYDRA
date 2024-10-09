@@ -1,6 +1,6 @@
 # Hydra
 
-![Hydra Logo](https://example.com/logo.png) <!-- Replace with your actual logo URL -->
+![Hydra Logo](image/HYDRA.png) <!-- Replace with your actual logo URL -->
 
 ## 📖 Description
 
@@ -35,7 +35,7 @@
 1. **Clone the Repository**
 
    ```bash
-   git clone https://github.com/your-username/hydra.git
+   git clone https://github.com/lgallucc/HYDRA.git
    cd hydra
    ```
 2.	**Create a Virtual Environment (Optional but Recommended)**
