@@ -94,8 +94,6 @@ def load_all_data(
     bottle_numeric_columns=[
         "CTD_lon",
         "CTD_lat",
-        "LONGITUDE",
-        "LATITUDE",
         "TimeS_mean",
         "Bottle",
     ],
@@ -104,8 +102,6 @@ def load_all_data(
         "Dship_lat",
         "CTD_lon",
         "CTD_lat",
-        "LONGITUDE",
-        "LATITUDE",
         "timeS",
         "upoly0",
         "CTD_depth",
@@ -125,8 +121,6 @@ def load_all_data(
     bottle_required_columns = [
         "CTD_lon",
         "CTD_lat",
-        "LONGITUDE",
-        "LATITUDE",
         "TimeS_mean",
         "Bottle",
     ]
@@ -135,8 +129,6 @@ def load_all_data(
         "Dship_lat",
         "CTD_lon",
         "CTD_lat",
-        "LONGITUDE",
-        "LATITUDE",
         "timeS",
         "upoly0",
         "CTD_depth",

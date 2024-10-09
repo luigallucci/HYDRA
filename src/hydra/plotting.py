@@ -75,8 +75,8 @@ def generalized_map_plot(
                     if bottle_type in include_bottle_types:
                         subset = df[df["Bottle"].isin(bottles)]
                         plt.scatter(
-                            subset["LONGITUDE"],  # Longitude from the bottle data
-                            subset["LATITUDE"],  # Latitude from the bottle data
+                            subset["CTD_lon"],  # Longitude from the bottle data
+                            subset["CTD_lat"],  # Latitude from the bottle data
                             label=f"{bottle_type} - {station_id}",
                             marker="x",
                         )
@@ -116,7 +116,7 @@ def generalized_map_plot(
                     df = config["bottle_data"].get(station_id, None)
                     if df is not None:
                         ax.scatter(
-                            df["LONGITUDE"], df["LATITUDE"], label=station_id, alpha=0.7
+                            df["CTD_lon"], df["CTD_lat"], label=station_id, alpha=0.7
                         )
 
                 # Plot bottle types based on the dictionaries
@@ -127,8 +127,8 @@ def generalized_map_plot(
                         if bottle_type in include_bottle_types:
                             subset = df[df["Bottle"].isin(bottles)]
                             ax.scatter(
-                                subset["LONGITUDE"],
-                                subset["LATITUDE"],
+                                subset["CTD_long"],
+                                subset["CTD_lat"],
                                 label=f"{bottle_type} - {station_id}",
                                 marker="s",
                                 s=50,

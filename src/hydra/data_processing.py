@@ -72,10 +72,10 @@ def extract_dna_samples_from_bottle_data(config):
                         "station_id": station_id,
                         "bottle": row["Bottle"],
                         "lon": row[
-                            "LONGITUDE"
+                            "CTD_lon"
                         ],  # Assuming your bottle data has these columns
                         "lat": row[
-                            "LATITUDE"
+                            "CTD_lat"
                         ],  # Assuming your bottle data has these columns
                     }
                 )
