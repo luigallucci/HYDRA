@@ -1,5 +1,4 @@
 # tests/conftest.py
-
 import os
 
 import pandas as pd
@@ -31,18 +30,18 @@ def data_fixture(tmp_path_factory):
     # Create mock CSV files in bottle_data_dir
     bottle_csv_1 = bottle_data_dir / "station1_01_btl.csv"
     bottle_csv_1.write_text(
-        "CTD_lon,CTD_lat,LONGITUDE,LATITUDE,TimeS_mean,Bottle\n-74.0060,40.7128,-74.0060,40.7128,100,Type1"
+        "CTD_lon,CTD_lat,LONGITUDE,LATITUDE,TimeS_mean,Bottle\n-74.0060,40.7128,-74.0060,40.7128,100,1\n"
     )
 
     bottle_csv_2 = bottle_data_dir / "station2_02_btl.csv"
     bottle_csv_2.write_text(
-        "CTD_lon,CTD_lat,LONGITUDE,LATITUDE,TimeS_mean,Bottle\n-0.1278,51.5074,-0.1278,51.5074,200,Type2"
+        "CTD_lon,CTD_lat,LONGITUDE,LATITUDE,TimeS_mean,Bottle\n-0.1278,51.5074,-0.1278,51.5074,200,2\n"
     )
 
     # Create mock CSV files in profile_data_dir (now including 'Bottle' column)
     profile_csv_1 = profile_data_dir / "profile1.csv"
     profile_csv_1.write_text(
-        "Dship_lon,Dship_lat,CTD_lon,CTD_lat,LONGITUDE,LATITUDE,timeS,upoly0,CTD_depth,Bottle\n0.1,51.5,-0.1278,51.5074,-0.1278,51.5074,100,0.0,10,Type1\n0.2,51.6,-0.1278,51.5074,-0.1278,51.5074,200,0.1,20,Type2"
+        "Dship_lon,Dship_lat,CTD_lon,CTD_lat,LONGITUDE,LATITUDE,timeS,upoly0,CTD_depth,Bottle\n0.1,51.5,-0.1278,51.5074,-0.1278,51.5074,100,0.0,10,1\n0.2,51.6,-0.1278,51.5074,-0.1278,51.5074,200,0.1,20,2"
     )
 
     # Create mock NetCDF file in bathymetry_dir
@@ -62,8 +61,11 @@ def data_fixture(tmp_path_factory):
         "vent2": {"name": "Vent 2", "coordinates": (0.6, 0.6)},
     }
 
-    # Mock DNA samples data
-    dna_samples = pd.DataFrame({"LONGITUDE": [0.3, 0.4], "LATITUDE": [0.3, 0.4]})
+    # Mock DNA and Hydrogen samples dictionary
+    bottle_type_dict = {
+        "station1": {"DNA": [1], "Hydrogen": [2]},
+        "station2": {"DNA": [2]},
+    }
 
     # Compute dynamic latitude and longitude bounds based on mock data
     min_lat, max_lat, min_lon, max_lon = compute_lat_lon_bounds(str(bottle_data_dir))
@@ -90,18 +92,18 @@ def data_fixture(tmp_path_factory):
                 "cmap_orp": config["plot_settings"]["cmap_orp"],
             },
             "vents": vents,
-            "dna_samples": dna_samples,
         }
     )
 
     # Ensure the output directory exists
     (temp_dir / "output").mkdir(parents=True, exist_ok=True)
 
-    # Load all data using the updated config paths
+    # Load all data using the updated config paths, including the bottle_type_dict
     data = load_all_data(
         bottle_data_dir=str(bottle_data_dir),
         profile_data_dir=str(profile_data_dir),
         bathymetry_file=str(bathymetry_file),
+        bottle_type_dict=bottle_type_dict,  # Add this argument
         calculate_distances=True,
         method="haversine",
     )

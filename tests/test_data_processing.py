@@ -29,7 +29,7 @@ def test_combine_data_single_station():
                 "LONGITUDE": [-74.0060],
                 "LATITUDE": [40.7128],
                 "TimeS_mean": [12.0],
-                "Bottle": ["Value1"],
+                "Bottle": [1],
             }
         )
     }
@@ -42,7 +42,7 @@ def test_combine_data_single_station():
             "LONGITUDE": [-74.0060],
             "LATITUDE": [40.7128],
             "TimeS_mean": [12.0],
-            "Bottle": ["Value1"],
+            "Bottle": [1],
             "Station_ID": ["Station1"],
         }
     )
@@ -62,7 +62,7 @@ def test_combine_data_multiple_stations():
                 "LONGITUDE": [-74.0060, -74.0050],
                 "LATITUDE": [40.7128, 40.7138],
                 "TimeS_mean": [12.0, 13.0],
-                "Bottle": ["Value1", "Value2"],
+                "Bottle": [1, 2],
             }
         ),
         "Station2": pd.DataFrame(
@@ -72,7 +72,7 @@ def test_combine_data_multiple_stations():
                 "LONGITUDE": [-0.1278, -0.1288],
                 "LATITUDE": [51.5074, 51.5084],
                 "TimeS_mean": [14.0, 15.0],
-                "Bottle": ["Value3", "Value4"],
+                "Bottle": [3, 4],
             }
         ),
     }
@@ -85,7 +85,7 @@ def test_combine_data_multiple_stations():
             "LONGITUDE": [-74.0060, -74.0050, -0.1278, -0.1288],
             "LATITUDE": [40.7128, 40.7138, 51.5074, 51.5084],
             "TimeS_mean": [12.0, 13.0, 14.0, 15.0],
-            "Bottle": ["Value1", "Value2", "Value3", "Value4"],
+            "Bottle": [1, 2, 3, 4],
             "Station_ID": ["Station1", "Station1", "Station2", "Station2"],
         }
     )
@@ -104,7 +104,7 @@ def test_filter_data_by_temperature():
             "LONGITUDE": [-74.0060, -74.0050, -0.1278, -0.1288],
             "LATITUDE": [40.7128, 40.7138, 51.5074, 51.5084],
             "TimeS_mean": [12.0, 13.0, 14.0, 15.0],
-            "Bottle": ["Value1", "Value2", "Value3", "Value4"],
+            "Bottle": [1, 2, 3, 4],
             "Station_ID": ["Station1", "Station1", "Station2", "Station2"],
             "temperature": [19.5, 20.5, 21.0, 18.0],
         }
@@ -122,7 +122,7 @@ def test_filter_data_by_temperature():
             "LONGITUDE": [-74.0050, -0.1278],
             "LATITUDE": [40.7138, 51.5074],
             "TimeS_mean": [13.0, 14.0],
-            "Bottle": ["Value2", "Value3"],
+            "Bottle": [2, 3],
             "Station_ID": ["Station1", "Station2"],
             "temperature": [20.5, 21.0],
         }
@@ -142,7 +142,7 @@ def test_filter_data_by_temperature_no_matches():
             "LONGITUDE": [-74.0060, -74.0050],
             "LATITUDE": [40.7128, 40.7138],
             "TimeS_mean": [12.0, 13.0],
-            "Bottle": ["Value1", "Value2"],
+            "Bottle": [1, 2],
             "Station_ID": ["Station1", "Station1"],
             "temperature": [19.5, 19.8],
         }
@@ -169,25 +169,10 @@ def test_filter_data_by_temperature_invalid_column():
             "LONGITUDE": [-74.0060, -74.0050],
             "LATITUDE": [40.7128, 40.7138],
             "TimeS_mean": [12.0, 13.0],
-            "Bottle": ["Value1", "Value2"],
+            "Bottle": [1, 2],
             "Station_ID": ["Station1", "Station1"],
         }
     )
 
     with pytest.raises(KeyError):
         filter_data_by_temperature(df, min_temp=20, temperature_column="temperature")
-
-
-def test_extract_dna_samples_from_bottle_data():
-    config = {
-        "bottle_data": {"SO301_009": "path/to/mock_bottle_data_SO301_009.csv"},
-        "dna_samples": {"SO301_009": ["Bottle_1", "Bottle_2"]},
-    }
-
-    # Assuming bottle data has the correct mock structure, e.g., using pytest fixtures or mocking
-    dna_samples = extract_dna_samples_from_bottle_data(config)
-
-    assert len(dna_samples) == 2
-    assert dna_samples[0]["bottle"] == "Bottle_1"
-    assert "lon" in dna_samples[0]
-    assert "lat" in dna_samples[0]

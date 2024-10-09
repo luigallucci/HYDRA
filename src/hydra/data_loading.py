@@ -5,7 +5,8 @@ import os
 import pandas as pd
 import xarray as xr
 
-from hydra.utilities import calculate_cumulative_distances
+from hydra.utilities import (  # Assicurati che sia importata
+    assign_bottle_types_to_stations, calculate_cumulative_distances)
 
 
 def load_csv_files(
@@ -14,12 +15,6 @@ def load_csv_files(
     """
     Load multiple CSV files from a directory, clean their filenames, ensure specified columns are numeric,
     and verify the presence of required columns.
-
-    :param data_dir: Directory containing CSV files.
-    :param suffixes_to_remove: List of suffixes to remove from filenames.
-    :param numeric_columns: List of columns to convert to numeric types.
-    :param required_columns: List of columns that must be present in each CSV. Defaults to None.
-    :return: Dictionary mapping cleaned filenames (without suffixes) to DataFrames.
     """
     data = {}
     for filename in os.listdir(data_dir):
@@ -53,10 +48,6 @@ def load_csv_files(
 def load_netcdf_files(data_dir, variable_names):
     """
     Load multiple NetCDF files from a directory and extract specified variables.
-
-    :param data_dir: Directory containing NetCDF files.
-    :param variable_names: List of variable names to extract.
-    :return: Dictionary mapping filenames to xarray Datasets containing specified variables.
     """
     data = {}
     for filename in os.listdir(data_dir):
@@ -77,11 +68,6 @@ def load_netcdf_files(data_dir, variable_names):
 def extract_ctd_coordinates(df, lat_column, lon_column):
     """
     Extract CTD coordinates from a DataFrame.
-
-    :param df: DataFrame containing CTD data.
-    :param lat_column: Name of the latitude column.
-    :param lon_column: Name of the longitude column.
-    :return: List of (latitude, longitude) tuples.
     """
     return list(zip(df[lat_column], df[lon_column]))
 
@@ -89,10 +75,6 @@ def extract_ctd_coordinates(df, lat_column, lon_column):
 def combine_data(data_dict, station_id_column):
     """
     Combine multiple DataFrames into a single DataFrame with a station identifier.
-
-    :param data_dict: Dictionary of DataFrames.
-    :param station_id_column: Column name to use as station identifier.
-    :return: Combined DataFrame.
     """
     combined_df = pd.DataFrame()
     for station_id, df in data_dict.items():
@@ -106,6 +88,7 @@ def load_all_data(
     bottle_data_dir,
     profile_data_dir,
     bathymetry_file,
+    bottle_type_dict,  # Dizionario per assegnare i tipi di bottiglie
     suffixes_to_remove_bottle=["_01_btl", "_02_btl"],
     suffixes_to_remove_profile=["_01_cnv", "_02_cnv"],
     bottle_numeric_columns=[
@@ -135,20 +118,6 @@ def load_all_data(
 ):
     """
     Integrated function to load all necessary data for HYDRA.
-
-    :param bottle_data_dir: Directory containing bottle CSV files.
-    :param profile_data_dir: Directory containing profile CSV files.
-    :param bathymetry_file: Path to the bathymetry NetCDF file.
-    :param suffixes_to_remove_bottle: Suffixes to remove from bottle filenames.
-    :param suffixes_to_remove_profile: Suffixes to remove from profile filenames.
-    :param bottle_numeric_columns: Columns in bottle data to convert to numeric.
-    :param profile_numeric_columns: Columns in profile data to convert to numeric.
-    :param bathymetry_variables: Variables to extract from bathymetry NetCDF files.
-    :param station_id_column: Column name to use for station identifiers.
-    :param extract_coordinates: Flag to extract CTD coordinates.
-    :param calculate_distances: Flag to calculate cumulative distances.
-    :param method: Distance calculation method ('haversine' or 'geodesic').
-    :return: Dictionary containing loaded and processed data.
     """
     data = {}
 
@@ -179,6 +148,11 @@ def load_all_data(
         suffixes_to_remove=suffixes_to_remove_bottle,
         numeric_columns=bottle_numeric_columns,
         required_columns=bottle_required_columns,
+    )
+
+    # Assegna i tipi di bottiglie utilizzando il dizionario
+    data["bottle_data"] = assign_bottle_types_to_stations(
+        data["bottle_data"], bottle_type_dict
     )
 
     # Load profile data

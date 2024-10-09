@@ -53,3 +53,25 @@ def calculate_cumulative_distances(coords, method="geodesic"):
             )  # Returns distance in kilometers by default
         cumulative.append(cumulative[-1] + distance)
     return cumulative
+
+
+def assign_bottle_types_to_stations(bottle_data, bottle_type_dict):
+    """
+    Assign bottle types (e.g., DNA, Hydrogen) to bottle data for each station based on a dictionary.
+
+    :param bottle_data: Dictionary of DataFrames containing bottle data for each station.
+    :param bottle_type_dict: Dictionary mapping station IDs to their corresponding bottle types and bottle numbers.
+                             Example: {'Station007': {'DNA': [3, 6, 9], 'Hydrogen': [12, 15, 18], 'Z': [20]}}
+    :return: Updated bottle_data with a new 'Bottle_Type' column based on the assignment.
+    """
+    for station, types_dict in bottle_type_dict.items():
+        if station in bottle_data:
+            df = bottle_data[station].copy()
+            df["Bottle_Type"] = "Unknown"  # Default type
+
+            # Iterate over the bottle types and assign them based on bottle numbers
+            for bottle_type, bottle_numbers in types_dict.items():
+                df.loc[df["Bottle"].isin(bottle_numbers), "Bottle_Type"] = bottle_type
+
+            bottle_data[station] = df
+    return bottle_data

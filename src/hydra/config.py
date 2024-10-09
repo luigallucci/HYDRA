@@ -22,17 +22,12 @@ config = {
         "num_cols_profiles": 5,
         "cmap_orp": "viridis",
     },
-    "bottle_types": {
-        "Bottle1": {"label": "Type A"},
-        "Bottle2": {"label": "Type B"},
-        # Add more bottle types as needed
-    },
     "vents": {
         "Vent1": {"name": "Vent Alpha", "coordinates": (10, -20)},
         "Vent2": {"name": "Vent Beta", "coordinates": (-15, 30)},
         # Add more vents as needed
     },
-    # Add other configuration settings as needed
+    # The 'bottle_types' section is now dynamically handled by the workflow
 }
 
 
@@ -65,3 +60,14 @@ def compute_lat_lon_bounds(bottle_data_dir):
     max_lon = max(longitudes) if longitudes else DEFAULT_MAX_LON
 
     return min_lat, max_lat, min_lon, max_lon
+
+
+def load_bottle_types(bottle_type_dict):
+    """
+    Load bottle types into configuration for dynamic assignment of bottle types.
+
+    :param bottle_type_dict: Dictionary mapping station IDs to their corresponding bottle types and numbers.
+                             Example: {'Station007': {'DNA': [3, 6, 9], 'Hydrogen': [12, 15, 18]}}
+    :return: Updated configuration with bottle types.
+    """
+    config["bottle_types"] = bottle_type_dict

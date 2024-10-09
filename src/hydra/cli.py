@@ -1,6 +1,8 @@
 # src/hydra/cli.py
 
 import argparse
+import json
+import os
 
 from hydra.data_loading import load_all_data
 from hydra.data_processing import combine_data, filter_data_by_temperature
@@ -42,6 +44,12 @@ def main_function(args=None):
         default=20.0,
         help="Minimum temperature threshold for filtering.",
     )
+    parser.add_argument(
+        "--bottle_type_dict",
+        type=str,
+        required=True,
+        help="Path to JSON file containing the mapping of bottle types to stations.",
+    )  # Aggiunta dell'argomento per il file JSON con il dizionario
     parser.add_argument("--plot", action="store_true", help="Generate map plots.")
     parser.add_argument(
         "--profile_plot", action="store_true", help="Generate profile plots."
@@ -49,12 +57,21 @@ def main_function(args=None):
 
     parsed_args = parser.parse_args(args)
 
+    # Carica il dizionario dei tipi di bottiglie dal file JSON
+    try:
+        with open(parsed_args.bottle_type_dict, "r") as f:
+            bottle_type_dict = json.load(f)
+    except Exception as e:
+        print(f"Error loading bottle type dictionary: {e}")
+        return
+
     # Load all data
     try:
         data = load_all_data(
             bottle_data_dir=parsed_args.bottle_dir,
             profile_data_dir=parsed_args.profile_dir,
             bathymetry_file=parsed_args.bathymetry_file,
+            bottle_type_dict=bottle_type_dict,  # Passa il dizionario dei tipi di bottiglie
             calculate_distances=True,
             method="haversine",
         )

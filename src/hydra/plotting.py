@@ -1,4 +1,5 @@
 import os
+
 import matplotlib.pyplot as plt
 
 
@@ -6,7 +7,7 @@ def generalized_map_plot(
     config,
     include_bathymetry=True,
     include_station_paths=True,
-    include_dna_samples=True,
+    include_bottle_types=None,  # Used to specify bottle types
     include_vents=True,
     create_subplots=False,
     subplot_groups=None,
@@ -14,12 +15,12 @@ def generalized_map_plot(
     plot_all_together=True,
 ):
     """
-    Generate a generalized map plot.
+    Generate a generalized map plot with the option to handle multiple bottle types (e.g., DNA, Hydrogen).
 
     :param config: Configuration dictionary containing data and settings.
     :param include_bathymetry: Include bathymetry data in the plot.
     :param include_station_paths: Include station paths in the plot.
-    :param include_dna_samples: Include DNA samples in the plot.
+    :param include_bottle_types: List of bottle types to include based on provided dictionaries.
     :param include_vents: Include vents in the plot.
     :param create_subplots: Create subplots for different groups.
     :param subplot_groups: List of lists containing group station IDs.
@@ -27,20 +28,33 @@ def generalized_map_plot(
     :param plot_all_together: If True, plot all data in one plot; else, separate plots.
     :return: None. Saves the plot as a PNG file.
     """
+    if include_bottle_types is None:
+        include_bottle_types = config.get("bottle_types", {}).keys()
+
     if plot_all_together:
         plt.figure(figsize=(10, 8))
 
         # Plot bathymetry data if included
         if include_bathymetry and config.get("bathymetry") is not None:
             bathy = config["bathymetry"]
-            plt.scatter(
-                bathy["lon"].values.flatten(),
-                bathy["lat"].values.flatten(),
-                c=bathy["depth"].values.flatten(),
-                cmap="viridis",
-                alpha=0.5,
-                label="Bathymetry",
-            )
+            lon, lat = bathy["lon"].values.flatten(), bathy["lat"].values.flatten()
+            depths = bathy["depth"].values.flatten()
+
+            # Ensure matching sizes for lon, lat, and depths
+            if len(lon) == len(lat) == len(depths):
+                plt.scatter(
+                    lon,
+                    lat,
+                    c=depths,
+                    cmap="viridis",
+                    alpha=0.5,
+                    label="Bathymetry",
+                )
+            else:
+                # Log the issue instead of raising an error
+                print(
+                    f"Warning: Mismatch in bathymetry data sizes - Lon: {len(lon)}, Lat: {len(lat)}, Depths: {len(depths)}"
+                )
 
         # Plot station paths if included
         if include_station_paths and config.get("profile_data") is not None:
@@ -49,16 +63,23 @@ def generalized_map_plot(
                     df["CTD_lon"], df["CTD_lat"], label=f"Station {station_id} Path"
                 )
 
-        # Plot DNA samples if included
-        if include_dna_samples and "dna_samples" in config:
-            for sample in config["dna_samples"]:
-                plt.scatter(
-                    sample["lon"],  # Extracted longitude from bottle data
-                    sample["lat"],  # Extracted latitude from bottle data
-                    marker="x",
-                    color="red",
-                    label=f"DNA Sample {sample['bottle']}",
-                )
+        # Plot bottle types using the mapping dictionaries (DNA, Hydrogen, etc.)
+        if (
+            config.get("bottle_data") is not None
+            and config.get("bottle_type_dict") is not None
+        ):
+            for station_id, df in config["bottle_data"].items():
+                for bottle_type, bottles in (
+                    config["bottle_type_dict"].get(station_id, {}).items()
+                ):
+                    if bottle_type in include_bottle_types:
+                        subset = df[df["Bottle"].isin(bottles)]
+                        plt.scatter(
+                            subset["LONGITUDE"],  # Longitude from the bottle data
+                            subset["LATITUDE"],  # Latitude from the bottle data
+                            label=f"{bottle_type} - {station_id}",
+                            marker="x",
+                        )
 
         # Plot hydrothermal vents if included
         if include_vents and config.get("vents") is not None:
@@ -78,6 +99,7 @@ def generalized_map_plot(
         plt.legend()
         plt.savefig(output_filename)
         plt.close()
+
     else:
         # Handle multiple plots for each station group if needed
         if create_subplots and subplot_groups:
@@ -97,6 +119,21 @@ def generalized_map_plot(
                             df["LONGITUDE"], df["LATITUDE"], label=station_id, alpha=0.7
                         )
 
+                # Plot bottle types based on the dictionaries
+                if config.get("bottle_type_dict") is not None:
+                    for bottle_type, bottles in (
+                        config["bottle_type_dict"].get(station_id, {}).items()
+                    ):
+                        if bottle_type in include_bottle_types:
+                            subset = df[df["Bottle"].isin(bottles)]
+                            ax.scatter(
+                                subset["LONGITUDE"],
+                                subset["LATITUDE"],
+                                label=f"{bottle_type} - {station_id}",
+                                marker="s",
+                                s=50,
+                            )
+
                 # Plot vents in subplots if included
                 if include_vents:
                     for vent_id, vent_info in config["vents"].items():
@@ -108,29 +145,6 @@ def generalized_map_plot(
                             label=vent_info["name"],
                         )
 
-                # Plot bathymetry data if included
-                if include_bathymetry and config.get("bathymetry") is not None:
-                    bathy = config["bathymetry"]
-                    ax.scatter(
-                        bathy["longitude"].values.flatten(),
-                        bathy["latitude"].values.flatten(),
-                        c=bathy["depth"].values.flatten(),
-                        cmap="terrain",
-                        alpha=0.5,
-                        label="Bathymetry",
-                    )
-
-                # Plot DNA samples in subplots if included
-                if include_dna_samples and "dna_samples" in config:
-                    for sample in config["dna_samples"]:
-                        ax.scatter(
-                            sample["lon"],
-                            sample["lat"],
-                            marker="s",
-                            s=50,
-                            label=f"DNA Sample {sample['bottle']}",
-                        )
-
                 # Add legend only if there are labels
                 handles, labels = ax.get_legend_handles_labels()
                 if labels:
@@ -138,7 +152,7 @@ def generalized_map_plot(
 
                 ax.set_xlabel("Longitude")
                 ax.set_ylabel("Latitude")
-                ax.setTitle(f"Hydrothermal Vent Map - Group {idx + 1}")
+                ax.set_title(f"Hydrothermal Vent Map - Group {idx + 1}")
 
             plt.tight_layout()
             plt.savefig(output_filename, dpi=config["plot_settings"]["dpi"])
@@ -157,12 +171,12 @@ def generalized_profile_plot(
     grouping_list=None,  # List of lists containing station IDs for grouping
 ):
     """
-    Generate profile plots for specified stations.
+    Generate profile plots for specified stations, allowing visualization of different bottle types (e.g., DNA, Hydrogen).
 
     :param config: Configuration dictionary containing data and settings.
     :param stations_to_plot: List of station IDs to plot. If None, plot all.
     :param axis_config: 'time' or 'distance' for the x-axis.
-    :param include_bottle_types: List of bottle types to include in the plot.
+    :param include_bottle_types: List of bottle types to include in the plot based on the bottle_type_dict.
     :param create_subplots: Create subplots for different station groups.
     :param num_cols: Number of columns for subplots.
     :param output_filename: Filename for the output plot.
@@ -174,11 +188,11 @@ def generalized_profile_plot(
         stations_to_plot = list(config["profile_data"].keys())
 
     if include_bottle_types is None:
-        include_bottle_types = list(config["bottle_types"].keys())
+        include_bottle_types = config["bottle_type_dict"].keys()
 
     if plot_all_together:
         plt.figure(figsize=(12, 8))
-        xlabel = ""  # Inizializzazione di xlabel
+        xlabel = ""  # Initialize xlabel
         for station_id in stations_to_plot:
             df = config["profile_data"].get(station_id, None)
             if df is not None:
@@ -196,15 +210,21 @@ def generalized_profile_plot(
                 else:
                     raise ValueError("axis_config must be 'time' or 'distance'.")
 
+                # Utilizzare il dizionario per i tipi di bottiglie
+                bottle_type_dict = config.get("bottle_type_dict", {})
                 for bottle_type in include_bottle_types:
-                    bottle_df = df[df["Bottle"] == bottle_type]
+                    bottles = bottle_type_dict.get(station_id, {}).get(bottle_type, [])
+                    bottle_df = df[
+                        df["Bottle"].isin(bottles)
+                    ]  # Usa il dizionario per i numeri di bottiglia
                     if not bottle_df.empty:
                         plt.plot(
                             x,
                             bottle_df["CTD_depth"],
-                            label=f"{station_id} - {config['bottle_types'][bottle_type]['label']}",
+                            label=f"{station_id} - {bottle_type}",
                         )
-        if xlabel:  # Assicurarsi che xlabel sia stato assegnato
+
+        if xlabel:  # Ensure xlabel is assigned
             plt.xlabel(xlabel)
         plt.ylabel("CTD Depth (m)")
         plt.title("CTD Profiles")
@@ -228,7 +248,7 @@ def generalized_profile_plot(
             axes = axes.flatten()
             for idx, group in enumerate(grouping_list):
                 ax = axes[idx]
-                xlabel = ""  # Inizializzazione di xlabel per ogni subplot
+                xlabel = ""  # Initialize xlabel for each subplot
                 for station_id in group:
                     df = config["profile_data"].get(station_id, None)
                     if df is not None:
@@ -248,20 +268,25 @@ def generalized_profile_plot(
                                 "axis_config must be 'time' or 'distance'."
                             )
 
+                        bottle_type_dict = config.get("bottle_type_dict", {})
                         for bottle_type in include_bottle_types:
-                            bottle_df = df[df["Bottle"] == bottle_type]
+                            bottles = bottle_type_dict.get(station_id, {}).get(
+                                bottle_type, []
+                            )
+                            bottle_df = df[df["Bottle"].isin(bottles)]
                             if not bottle_df.empty:
                                 ax.plot(
                                     x,
                                     bottle_df["CTD_depth"],
-                                    label=f"{station_id} - {config['bottle_types'][bottle_type]['label']}",
+                                    label=f"{station_id} - {bottle_type}",
                                 )
+
                 if xlabel:
                     ax.set_xlabel(xlabel)
                 ax.set_ylabel("CTD Depth (m)")
                 ax.set_title(f"CTD Profiles - Group {idx + 1}")
 
-                # Aggiungi legenda solo se ci sono etichette
+                # Add legend only if there are labels
                 handles, labels = ax.get_legend_handles_labels()
                 if labels:
                     ax.legend()
@@ -290,13 +315,17 @@ def generalized_profile_plot(
                     else:
                         raise ValueError("axis_config must be 'time' or 'distance'.")
 
+                    bottle_type_dict = config.get("bottle_type_dict", {})
                     for bottle_type in include_bottle_types:
-                        bottle_df = df[df["Bottle"] == bottle_type]
+                        bottles = bottle_type_dict.get(station_id, {}).get(
+                            bottle_type, []
+                        )
+                        bottle_df = df[df["Bottle"].isin(bottles)]
                         if not bottle_df.empty:
                             plt.plot(
                                 x,
                                 bottle_df["CTD_depth"],
-                                label=config["bottle_types"][bottle_type]["label"],
+                                label=f"{station_id} - {bottle_type}",
                             )
 
                     if xlabel:

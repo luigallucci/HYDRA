@@ -6,13 +6,9 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from hydra.data_loading import (
-    combine_data,
-    extract_ctd_coordinates,
-    load_all_data,
-    load_csv_files,
-    load_netcdf_files,
-)
+from hydra.data_loading import (combine_data, extract_ctd_coordinates,
+                                load_all_data, load_csv_files,
+                                load_netcdf_files)
 
 
 def test_load_csv_files_empty(tmp_path):
@@ -53,7 +49,7 @@ def test_load_csv_files_with_files(tmp_path):
     """
     # Create mock CSV file
     csv_file = tmp_path / "station1_01_btl.csv"
-    csv_content = "CTD_lon,CTD_lat,LONGITUDE,LATITUDE,TimeS_mean,Bottle\n-74.0060,40.7128,-74.0060,40.7128,12.0,Value1"
+    csv_content = "CTD_lon,CTD_lat,LONGITUDE,LATITUDE,TimeS_mean,Bottle\n-74.0060,40.7128,-74.0060,40.7128,12.0,1"
     csv_file.write_text(csv_content)
 
     data_dict = load_csv_files(
@@ -129,7 +125,7 @@ def test_load_csv_files_non_csv_files(tmp_path):
 
     # Create a valid CSV file
     csv_file = tmp_path / "station3_01_btl.csv"
-    csv_content = "CTD_lon,CTD_lat,LONGITUDE,LATITUDE,TimeS_mean,Bottle\n-0.1278,51.5074,-0.1278,51.5074,14.0,Value3"
+    csv_content = "CTD_lon,CTD_lat,LONGITUDE,LATITUDE,TimeS_mean,Bottle\n-0.1278,51.5074,-0.1278,51.5074,14.0,1"
     csv_file.write_text(csv_content)
 
     data_dict = load_csv_files(
@@ -224,7 +220,7 @@ def test_combine_data_type_error():
                 "LONGITUDE": [-74.0060],
                 "LATITUDE": [40.7128],
                 "TimeS_mean": [12.0],
-                "Bottle": ["Value1"],
+                "Bottle": ["1"],
             }
         )
     ]

@@ -51,32 +51,33 @@ def extract_dna_samples_from_bottle_data(config):
     """
     Extract DNA samples from bottle data based on station and bottle IDs specified in the config.
 
-    :param config: The configuration dictionary containing paths to bottle data and DNA samples.
+    :param config: The configuration dictionary containing bottle data and dna_samples mapping.
     :return: A list of dictionaries with station ID, bottle, longitude, and latitude for each DNA sample.
     """
     dna_samples = []
 
     # Loop through each station in the dna_samples configuration
     for station_id, bottle_list in config["dna_samples"].items():
-        # Get the corresponding bottle_data for this station
-        bottle_data = pd.read_csv(config["bottle_data"][station_id])
+        # Get the corresponding bottle_data for this station from the config
+        if station_id in config["bottle_data"]:
+            bottle_data = config["bottle_data"][station_id]
 
-        # Filter the bottle_data for the specified DNA sample bottles
-        dna_bottles = bottle_data[bottle_data["Bottle"].isin(bottle_list)]
+            # Filter the bottle_data for the specified DNA sample bottles
+            dna_bottles = bottle_data[bottle_data["Bottle"].isin(bottle_list)]
 
-        # Extract the relevant info: station, bottle, longitude, latitude
-        for _, row in dna_bottles.iterrows():
-            dna_samples.append(
-                {
-                    "station_id": station_id,
-                    "bottle": row["Bottle"],
-                    "lon": row[
-                        "LONGITUDE"
-                    ],  # Assuming your bottle data has these columns
-                    "lat": row[
-                        "LATITUDE"
-                    ],  # Assuming your bottle data has these columns
-                }
-            )
+            # Extract the relevant info: station, bottle, longitude, latitude
+            for _, row in dna_bottles.iterrows():
+                dna_samples.append(
+                    {
+                        "station_id": station_id,
+                        "bottle": row["Bottle"],
+                        "lon": row[
+                            "LONGITUDE"
+                        ],  # Assuming your bottle data has these columns
+                        "lat": row[
+                            "LATITUDE"
+                        ],  # Assuming your bottle data has these columns
+                    }
+                )
 
     return dna_samples

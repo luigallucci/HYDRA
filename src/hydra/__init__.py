@@ -2,16 +2,12 @@
 
 from .cli import main_function
 from .config import compute_lat_lon_bounds, config
-from .data_loading import (
-    combine_data,
-    extract_ctd_coordinates,
-    load_all_data,
-    load_csv_files,
-    load_netcdf_files,
-)
+from .data_loading import (combine_data, extract_ctd_coordinates,
+                           load_all_data, load_csv_files, load_netcdf_files)
 from .data_processing import combine_data, filter_data_by_temperature
 from .plotting import generalized_map_plot, generalized_profile_plot
-from .utilities import calculate_cumulative_distances, validate_coordinates
+from .utilities import (calculate_cumulative_distances,  # Aggiunta qui
+                        validate_coordinates)
 
 __all__ = [
     "config",
@@ -26,5 +22,5 @@ __all__ = [
     "calculate_cumulative_distances",
     "generalized_map_plot",
     "generalized_profile_plot",
-    "main_function",
+    "main_function",  # Aggiunta qui
 ]
