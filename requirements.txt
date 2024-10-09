@@ -1,0 +1,10 @@
+pandas>=1.0.0
+numpy>=1.18.0
+matplotlib>=3.0.0
+xarray>=0.16.0
+scipy>=1.4.0
+haversine>=2.4.0
+geopy>=2.0.0
+argparse>=1.4.0
+pytest>=6.0.0
+matplotlib>=3.0.0
