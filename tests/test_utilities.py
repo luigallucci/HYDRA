@@ -2,8 +2,7 @@
 
 import pytest
 
-from hydra.utilities import (calculate_cumulative_distances,
-                             validate_coordinates)
+from hydra.utilities import calculate_cumulative_distances, validate_coordinates
 
 
 def test_calculate_cumulative_distances_empty():

@@ -1,5 +1,4 @@
 import os
-
 import matplotlib.pyplot as plt
 
 
@@ -31,9 +30,9 @@ def generalized_map_plot(
     if plot_all_together:
         plt.figure(figsize=(10, 8))
 
+        # Plot bathymetry data if included
         if include_bathymetry and config.get("bathymetry") is not None:
             bathy = config["bathymetry"]
-            # Utilizza 'lon' e 'lat' invece di 'longitude' e 'latitude'
             plt.scatter(
                 bathy["lon"].values.flatten(),
                 bathy["lat"].values.flatten(),
@@ -43,22 +42,25 @@ def generalized_map_plot(
                 label="Bathymetry",
             )
 
+        # Plot station paths if included
         if include_station_paths and config.get("profile_data") is not None:
             for station_id, df in config["profile_data"].items():
                 plt.plot(
                     df["CTD_lon"], df["CTD_lat"], label=f"Station {station_id} Path"
                 )
 
-        if include_dna_samples and config.get("dna_samples") is not None:
+        # Plot DNA samples if included
+        if include_dna_samples and "dna_samples" in config:
             for sample in config["dna_samples"]:
                 plt.scatter(
-                    sample["lon"],  # Utilizza 'lon' se disponibile
-                    sample["lat"],  # Utilizza 'lat' se disponibile
+                    sample["lon"],  # Extracted longitude from bottle data
+                    sample["lat"],  # Extracted latitude from bottle data
                     marker="x",
                     color="red",
-                    label="DNA Sample",
+                    label=f"DNA Sample {sample['bottle']}",
                 )
 
+        # Plot hydrothermal vents if included
         if include_vents and config.get("vents") is not None:
             for vent_id, vent_info in config["vents"].items():
                 plt.scatter(
@@ -69,6 +71,7 @@ def generalized_map_plot(
                     label=f"Vent {vent_id}",
                 )
 
+        # Set plot labels and title
         plt.xlabel("Longitude")
         plt.ylabel("Latitude")
         plt.title("HYDRA Map Plot")
@@ -76,7 +79,7 @@ def generalized_map_plot(
         plt.savefig(output_filename)
         plt.close()
     else:
-        # Multiple plots, each for a single station or group
+        # Handle multiple plots for each station group if needed
         if create_subplots and subplot_groups:
             num_plots = len(subplot_groups)
             cols = 2
@@ -86,16 +89,16 @@ def generalized_map_plot(
 
             for idx, group in enumerate(subplot_groups):
                 ax = axes[idx]
+
                 for station_id in group:
-                    df = config["profile_data"].get(station_id, None)
+                    df = config["bottle_data"].get(station_id, None)
                     if df is not None:
                         ax.scatter(
-                            df["lon"],  # Utilizza 'lon' se disponibile
-                            df["lat"],  # Utilizza 'lat' se disponibile
-                            label=station_id,
-                            alpha=0.7,
+                            df["LONGITUDE"], df["LATITUDE"], label=station_id, alpha=0.7
                         )
-                if include_vents and config.get("vents") is not None:
+
+                # Plot vents in subplots if included
+                if include_vents:
                     for vent_id, vent_info in config["vents"].items():
                         ax.scatter(
                             vent_info["coordinates"][1],
@@ -104,82 +107,42 @@ def generalized_map_plot(
                             s=100,
                             label=vent_info["name"],
                         )
+
+                # Plot bathymetry data if included
                 if include_bathymetry and config.get("bathymetry") is not None:
                     bathy = config["bathymetry"]
                     ax.scatter(
-                        bathy["lon"].values.flatten(),
-                        bathy["lat"].values.flatten(),
+                        bathy["longitude"].values.flatten(),
+                        bathy["latitude"].values.flatten(),
                         c=bathy["depth"].values.flatten(),
                         cmap="terrain",
                         alpha=0.5,
                         label="Bathymetry",
                     )
-                if include_dna_samples and config.get("dna_samples") is not None:
+
+                # Plot DNA samples in subplots if included
+                if include_dna_samples and "dna_samples" in config:
                     for sample in config["dna_samples"]:
                         ax.scatter(
                             sample["lon"],
                             sample["lat"],
                             marker="s",
                             s=50,
-                            label=sample["name"],
+                            label=f"DNA Sample {sample['bottle']}",
                         )
+
+                # Add legend only if there are labels
                 handles, labels = ax.get_legend_handles_labels()
                 if labels:
                     ax.legend()
+
                 ax.set_xlabel("Longitude")
                 ax.set_ylabel("Latitude")
-                ax.set_title(f"Hydrothermal Vent Map - Group {idx + 1}")
+                ax.setTitle(f"Hydrothermal Vent Map - Group {idx + 1}")
+
             plt.tight_layout()
-            plt.savefig(
-                output_filename, dpi=config.get("plot_settings", {}).get("dpi", 100)
-            )
+            plt.savefig(output_filename, dpi=config["plot_settings"]["dpi"])
             plt.close()
-        else:
-            # Plot each station separately
-            for station_id, df in config["profile_data"].items():
-                plt.figure(figsize=(6, 4))
-                if include_bathymetry and config.get("bathymetry") is not None:
-                    bathy = config["bathymetry"]
-                    plt.scatter(
-                        bathy["lon"].values.flatten(),
-                        bathy["lat"].values.flatten(),
-                        c=bathy["depth"].values.flatten(),
-                        cmap="terrain",
-                        alpha=0.5,
-                        label="Bathymetry",
-                    )
-                plt.scatter(df["CTD_lon"], df["CTD_lat"], label=station_id, alpha=0.7)
-                if include_vents and config.get("vents") is not None:
-                    for vent_id, vent_info in config["vents"].items():
-                        plt.scatter(
-                            vent_info["coordinates"][1],
-                            vent_info["coordinates"][0],
-                            marker="^",
-                            s=100,
-                            label=vent_info["name"],
-                        )
-                if include_dna_samples and config.get("dna_samples") is not None:
-                    for sample in config["dna_samples"]:
-                        plt.scatter(
-                            sample["lon"],
-                            sample["lat"],
-                            marker="s",
-                            s=50,
-                            label=sample["name"],
-                        )
-                handles, labels = plt.gca().get_legend_handles_labels()
-                if labels:
-                    plt.legend()
-                plt.xlabel("Longitude")
-                plt.ylabel("Latitude")
-                plt.title(f"Hydrothermal Vent Map - {station_id}")
-                output_path = (
-                    os.path.splitext(output_filename)[0] + f"_{station_id}.png"
-                )
-                plt.savefig(
-                    output_path, dpi=config.get("plot_settings", {}).get("dpi", 100)
-                )
-                plt.close()
 
 
 def generalized_profile_plot(

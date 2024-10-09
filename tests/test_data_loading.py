@@ -6,9 +6,13 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from hydra.data_loading import (combine_data, extract_ctd_coordinates,
-                                load_all_data, load_csv_files,
-                                load_netcdf_files)
+from hydra.data_loading import (
+    combine_data,
+    extract_ctd_coordinates,
+    load_all_data,
+    load_csv_files,
+    load_netcdf_files,
+)
 
 
 def test_load_csv_files_empty(tmp_path):

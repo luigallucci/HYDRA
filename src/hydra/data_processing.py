@@ -45,3 +45,38 @@ def filter_data_by_temperature(df, min_temp, temperature_column="temperature"):
     filtered_df = df[df[temperature_column] >= min_temp].reset_index(drop=True)
 
     return filtered_df
+
+
+def extract_dna_samples_from_bottle_data(config):
+    """
+    Extract DNA samples from bottle data based on station and bottle IDs specified in the config.
+
+    :param config: The configuration dictionary containing paths to bottle data and DNA samples.
+    :return: A list of dictionaries with station ID, bottle, longitude, and latitude for each DNA sample.
+    """
+    dna_samples = []
+
+    # Loop through each station in the dna_samples configuration
+    for station_id, bottle_list in config["dna_samples"].items():
+        # Get the corresponding bottle_data for this station
+        bottle_data = pd.read_csv(config["bottle_data"][station_id])
+
+        # Filter the bottle_data for the specified DNA sample bottles
+        dna_bottles = bottle_data[bottle_data["Bottle"].isin(bottle_list)]
+
+        # Extract the relevant info: station, bottle, longitude, latitude
+        for _, row in dna_bottles.iterrows():
+            dna_samples.append(
+                {
+                    "station_id": station_id,
+                    "bottle": row["Bottle"],
+                    "lon": row[
+                        "LONGITUDE"
+                    ],  # Assuming your bottle data has these columns
+                    "lat": row[
+                        "LATITUDE"
+                    ],  # Assuming your bottle data has these columns
+                }
+            )
+
+    return dna_samples

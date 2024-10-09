@@ -176,3 +176,18 @@ def test_filter_data_by_temperature_invalid_column():
 
     with pytest.raises(KeyError):
         filter_data_by_temperature(df, min_temp=20, temperature_column="temperature")
+
+
+def test_extract_dna_samples_from_bottle_data():
+    config = {
+        "bottle_data": {"SO301_009": "path/to/mock_bottle_data_SO301_009.csv"},
+        "dna_samples": {"SO301_009": ["Bottle_1", "Bottle_2"]},
+    }
+
+    # Assuming bottle data has the correct mock structure, e.g., using pytest fixtures or mocking
+    dna_samples = extract_dna_samples_from_bottle_data(config)
+
+    assert len(dna_samples) == 2
+    assert dna_samples[0]["bottle"] == "Bottle_1"
+    assert "lon" in dna_samples[0]
+    assert "lat" in dna_samples[0]

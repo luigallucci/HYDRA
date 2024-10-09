@@ -1,8 +1,7 @@
 # examples/example_profile_plot.py
 
 from hydra import generalized_profile_plot
-from hydra.config import \
-    config  # Assuming config is defined in hydra/config.py
+from hydra.config import config  # Assuming config is defined in hydra/config.py
 
 # Define grouping list
 grouping_list = [["Station1", "Station2"], ["Station3", "Station4"], ["Station5"]]
