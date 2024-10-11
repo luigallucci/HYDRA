@@ -1,6 +1,6 @@
 # Hydra
 
-![Hydra Logo](image/HYDRA.png) <!-- Replace with your actual logo URL -->
+![Hydra Logo](image/HYDRA2.png) <!-- Replace with your actual logo URL -->
 
 ## 📖 Description
 
