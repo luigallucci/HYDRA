@@ -3,7 +3,7 @@
 from .cli import main_function
 from .config import compute_lat_lon_bounds, config
 from .data_loading import (combine_data, extract_ctd_coordinates,
-                           load_all_data, load_csv_files, load_netcdf_files)
+                           load_all_data, load_csv_files, load_netcdf_files_with_zoom)
 from .data_processing import combine_data, filter_data_by_temperature
 from .plotting import generalized_map_plot, generalized_profile_plot
 from .utilities import (calculate_cumulative_distances,  # Aggiunta qui
@@ -13,7 +13,7 @@ __all__ = [
     "config",
     "compute_lat_lon_bounds",
     "load_csv_files",
-    "load_netcdf_files",
+    "load_netcdf_files_with_zoom",
     "extract_ctd_coordinates",
     "combine_data",
     "load_all_data",

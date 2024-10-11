@@ -15,7 +15,7 @@ config = {
     "bathymetry": {
         "lat_bounds": (DEFAULT_MIN_LAT, DEFAULT_MAX_LAT),
         "lon_bounds": (DEFAULT_MIN_LON, DEFAULT_MAX_LON),
-        "elevation_var": "depth",
+        "elevation_var": "elevation",
     },
     "plot_settings": {
         "dpi": 300,
